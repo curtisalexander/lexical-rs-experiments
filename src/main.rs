@@ -1,34 +1,82 @@
-use lexical;
+use lexical::write_float_options::RoundMode;
+use std::error::Error;
+use std::num::NonZeroI32;
+// use std::num::NonZeroUsize;
 
-fn main() {
-    let f_as_str = lexical::to_string(3.0);
-    println!("f_as_str = {}", &f_as_str);
-
-    let str_as_f: f64 = lexical::parse("3.5").unwrap();
-    println!("str_as_f = {}", str_as_f);
-
-    let str_as_f_sn: f64 = lexical::parse("333039375527").unwrap();
-    println!("str_as_f_sn = {}", str_as_f_sn);
+fn print_numerics(f: f64) {
+    println!("\nf (initially) = {}", f);
 
     const FORMAT: u128 = lexical::format::STANDARD;
+    // const DIGITS: Option<NonZeroUsize> = std::num::NonZeroUsize::new(14 as usize);
+    const EXPBREAK: Option<NonZeroI32> = std::num::NonZeroI32::new(14i32);
+
     let options = lexical::WriteFloatOptions::builder()
         .trim_floats(true)
+        // .max_significant_digits(DIGITS)
+        .positive_exponent_break(EXPBREAK)
+        .round_mode(RoundMode::Truncate)
         .build()
         .unwrap();
-    let str_with_options = lexical::to_string_with_options::<_, FORMAT>(0.0, &options);
-    println!("str_with_options = {}", str_with_options);
+    let f_as_str_with_options = lexical::to_string_with_options::<_, FORMAT>(f, &options);
+    println!("f (after converting to string) = {}", f_as_str_with_options);
 
-    let str_with_options2 = lexical::to_string_with_options::<_, FORMAT>(123.456, &options);
-    println!("str_with_options2 = {}", str_with_options2);
+    let f_as_f: f64 = lexical::parse(f_as_str_with_options).unwrap();
+    println!("f (after converting back to float) = {}", f_as_f);
+}
 
-    let sn_value = 333039375527f64;
-    println!("sn_value = {}", sn_value);
-
-    // errors when DIGITS = 14
+fn print_numerics_prior(f: f64) -> Result<(), Box<dyn Error>> {
+    println!("\nf (initially) = {}", f);
     const DIGITS: usize = 14;
-    let sn_as_str = format!("{1:.0$}", DIGITS, lexical::to_string(sn_value));
-    println!("sn_as_str = {}", sn_as_str);
+    let f_as_str = format!(
+        "{1:.0$}",
+        DIGITS,
+        f //f64::trunc(f * 10f64.powi(DIGITS as i32)) / 10f64.powi(DIGITS as i32)
+    );
+    println!("f (after converting to string with format macro) = {}", f);
 
-    let sn_as_f: f64 = lexical::parse(sn_as_str).unwrap();
-    println!("sn_as_f = {}", sn_as_f);
+    let f_as_f: f64 = lexical::parse(f_as_str)?;
+    println!("f (after converting back to float) = {}", f_as_f);
+
+    Ok(())
+}
+
+fn print_numerics_another(f: f64) -> Result<(), Box<dyn Error>> {
+    println!("\nf (initially) = {}", f);
+    const DIGITS: usize = 14;
+    let f_as_str = format!(
+        "{1:.0$}",
+        DIGITS,
+        f //f64::trunc(f * 10f64.powi(DIGITS as i32)) / 10f64.powi(DIGITS as i32)
+    );
+    println!("f (after converting to string with format macro) = {}", f);
+
+    let f_as_f: f64 = f_as_str.parse::<f64>()?;
+    println!("f (after converting back to float) = {}", f_as_f);
+
+    Ok(())
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
+    let f = 333039375527f64;
+    print_numerics(f);
+
+    let f = 99.1234567890123456;
+    print_numerics(f);
+
+    let f = 333039375527f64;
+    print_numerics_prior(f)?;
+
+    let f = 99.1234567890123456;
+    print_numerics_prior(f);
+
+    let f = 4.6000000000000087;
+    print_numerics_prior(f);
+
+    let f = 4.6000000000000087;
+    print_numerics(f);
+
+    let f = 4.6000000000000087;
+    print_numerics_another(f);
+
+    Ok(())
 }
