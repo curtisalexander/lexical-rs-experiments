@@ -67,16 +67,16 @@ fn main() -> Result<(), Box<dyn Error>> {
     print_numerics_prior(f)?;
 
     let f = 99.1234567890123456;
-    print_numerics_prior(f);
+    print_numerics_prior(f)?;
 
     let f = 4.6000000000000087;
-    print_numerics_prior(f);
+    print_numerics_prior(f)?;
 
     let f = 4.6000000000000087;
     print_numerics(f);
 
     let f = 4.6000000000000087;
-    print_numerics_another(f);
+    print_numerics_another(f)?;
 
     Ok(())
 }
